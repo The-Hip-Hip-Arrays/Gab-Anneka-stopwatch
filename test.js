@@ -1,14 +1,20 @@
 var stopwatch;
 
-stopwatch = {
-  elapsedtime: 0,
-  start: function(){
-    setInterval(function(){
-      stopwatch.elapsedtime = 10;
-    }, 10);
-  }
-};
 
+
+QUnit.module('stopwatch', {
+  beforeEach: function() {
+    // prepare something for all following tests
+    stopwatch = {
+      elapsedtime: 0,
+      start: function(){
+        setInterval(function(){
+          stopwatch.elapsedtime = 10;
+        }, 10);
+      }
+    };
+  }
+});
 
 test('testing the testing environment', function(assert) {
   var actual = 1;
@@ -39,6 +45,12 @@ test('start method should update the elapsedtime property of the stopwatch each 
   }, 10);
 });
 
-// test('after 2 ticks of 10ms, elapsedtime of the stopwatch should be 20', function(assert){
-//
-// });
+test('after 2 ticks of 10ms, elapsedtime of the stopwatch should be 20', function(assert){
+  var done = assert.async();
+  stopwatch.start();
+  var expected = 20;
+  setTimeout(function() {
+    assert.equal(stopwatch.elapsedtime, expected, 'Elapsed 20ms after start the stopwatch');
+    done();
+  }, 20);
+});
