@@ -39,22 +39,32 @@ QUnit.module('stopwatch', {
   beforeEach: function() {
     // prepare something for all following tests
     stopwatch = {
-      runnig: false,
+      running: false,
       elapsedtime: 0,
       timer: null,
+      stops: [],
       tick: function(){
         stopwatch.elapsedtime += 10;
       },
       start: function(){
-        if (!stopwatch.runnig){
+        if (!stopwatch.running){
           this.timer = setInterval(this.tick, 10);
         }
-        this.runnig = true;
+        this.running = true;
+      },
+      stop: function(){
+        var lastIndex = this.stops.length - 1;
+        if(lastIndex < 0 || this.stops[lastIndex] !== this.elapsedtime) {
+          this.stops.push(this.elapsedtime);
+        }
       },
       reset: function(){
         clearInterval(this.timer);
         this.elapsedtime = 0;
-        this.runnig = false;
+        this.running = false;
+      },
+      getStops: function(){
+        return this.stops.slice();
       }
     };
   },
@@ -75,7 +85,7 @@ test('testing the testing environment', function(assert) {
   assert.equal(actual, expected, 'test environment is set up correctly');
 });
 
-test('A function constructor for stopwatch should exist', function(assert){
+test('An object stopwatch should exist', function(assert){
   var actual = typeof stopwatch;
   var expected = 'object';
   assert.equal(actual, expected);
@@ -91,6 +101,14 @@ test('At the beginning elapsedtime should be 0', function(assert) {
   var actual = stopwatch.elapsedtime;
   var expected = 0;
   assert.equal(actual, expected, 'Elapsed time is set to 0s before start begins');
+});
+
+test('Tick method should add 10ms to elapsedtime each time it is executed', function(assert){
+  stopwatch.elapsedtime = 1234;
+  stopwatch.tick();
+  var actual = stopwatch.elapsedtime;
+  var expected = 1234 + 10;
+  assert.equal(actual, expected);
 });
 
 test('Start method should call setInterval with the tick method and 10 as parameters', function(assert){
@@ -163,10 +181,35 @@ test('Reset method should set elapsedtime to 0', function(assert){
   assert.equal(actual, expected);
 });
 
-test('Reset method should set runnig to false', function(assert){
-  stopwatch.runnig = true;
+test('Reset method should set running to false', function(assert){
+  stopwatch.running = true;
   stopwatch.reset();
-  var actual = stopwatch.runnig;
+  var actual = stopwatch.running;
   var expected = false;
   assert.equal(actual, expected);
+});
+
+test('Stop method should save current ellapsed time in the stops property', function(assert){
+  stopwatch.elapsedtime = 999;
+  stopwatch.stop();
+  var stopsLen = stopwatch.stops.length;
+  var actual = stopwatch.stops[stopsLen -1];
+  var expected = stopwatch.elapsedtime;
+  assert.equal(actual, expected);
+});
+
+test('Stop method should save only once each value', function(assert){
+  stopwatch.stop();
+  stopwatch.stop();
+  var actual = stopwatch.stops.length;
+  var expected = 1;
+  assert.equal(actual, expected);
+});
+
+test('Get stops should return an copy of the stops attribute', function(assert){
+  stopwatch.stops = [100, 250, 800, 1200, 3000];
+  var actualStops = stopwatch.getStops();
+  var expectedStops = [100, 250, 800, 1200, 3000];
+  assert.deepEqual(actualStops, expectedStops);
+  assert.notEqual(actualStops, stopwatch.stops);
 });
