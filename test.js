@@ -42,13 +42,14 @@ QUnit.module('stopwatch', {
       running: false,
       elapsedtime: 0,
       timer: null,
+      accuracy: 10,
       stops: [],
       tick: function(){
-        stopwatch.elapsedtime += 10;
+        stopwatch.elapsedtime += stopwatch.accuracy;
       },
       start: function(){
         if (!stopwatch.running){
-          this.timer = setInterval(this.tick, 10);
+          this.timer = setInterval(this.tick, this.accuracy);
         }
         this.running = true;
       },
@@ -107,7 +108,7 @@ test('Tick method should add 10ms to elapsedtime each time it is executed', func
   stopwatch.elapsedtime = 1234;
   stopwatch.tick();
   var actual = stopwatch.elapsedtime;
-  var expected = 1234 + 10;
+  var expected = 1234 + stopwatch.accuracy;
   assert.equal(actual, expected);
 });
 
@@ -115,7 +116,7 @@ test('Start method should call setInterval with the tick method and 10 as parame
   setInterval = spyOn(setInterval);
   stopwatch.start();
   var actual = setInterval.getArgsOfCall(0);
-  var expected = [stopwatch.tick, 10];
+  var expected = [stopwatch.tick, stopwatch.accuracy];
   assert.deepEqual(actual, expected, 'setInterval is being called');
 });
 
